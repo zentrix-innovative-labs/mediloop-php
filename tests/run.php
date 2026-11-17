@@ -140,5 +140,9 @@ $tokens = Pkce::exchange('ext-app', 'https://app.example/cb', 'code1', $p['verif
 check('the code exchange sends the client secret and the verifier', $tokens['access_token'] === 'a' && str_contains($t->calls[0][3], 'client_secret=secret1') && str_contains($t->calls[0][3], 'code_verifier='));
 check('a refresh token gets a new access token', Pkce::refresh('ext-app', 'r', $t, 'secret1')['access_token'] === 'b');
 check('a refused refresh is raised', raises(fn () => Pkce::refresh('ext-app', 'r', $t, 'secret1'), MediloopException::class) !== null);
+// A write with nothing to say is still an object: Mediloop refuses a list.
+$t = new Fake([['status' => 200, 'body' => json_encode(['access_token' => 'a', 'expires_in' => 600])], ['status' => 200, 'body' => '{}']]);
+(new Client(apiKey: 'sk_test_x', transport: $t, sleeper: fn () => null))->post('/api/v1/sandbox-data/reset/');
+check('a write with no fields sends {} and not []', $t->calls[1][3] === '{}');
 echo $failures === 0 ? "\nAll passed.\n" : "\n$failures failed.\n";
 exit($failures === 0 ? 0 : 1);

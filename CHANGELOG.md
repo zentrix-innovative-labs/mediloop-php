@@ -1,4 +1,6 @@
 # Changelog
+## 1.0.2
+- A write with no fields, such as closing a bill or discharging a visit, now sends `{}`. It was sent as `[]`, which Mediloop refuses.
 
 ## 1.0.1
 

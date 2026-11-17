@@ -21,7 +21,7 @@ namespace Mediloop;
  */
 final class Client
 {
-    public const VERSION = '1.0.1';
+    public const VERSION = '1.0.2';
     public const DEFAULT_BASE_URL = 'https://api.mediloop.co';
 
     private string $baseUrl;
@@ -128,7 +128,8 @@ final class Client
         if ($query) {
             $url .= (str_contains($url, '?') ? '&' : '?') . http_build_query($query, '', '&', PHP_QUERY_RFC3986);
         }
-        $body = $json === null ? null : json_encode($json, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        // An empty PHP array would be sent as [], a list. Mediloop expects an object, so an empty body goes as {}.
+        $body = $json === null ? null : json_encode($json === [] ? new \stdClass() : $json, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         $isWrite = !in_array($method, ['GET', 'HEAD', 'OPTIONS'], true);
         // One key for the whole call, retries included: that is what makes a retry safe.
         $key = $isWrite ? ($idempotencyKey ?? self::uuid()) : null;
