@@ -1,8 +1,5 @@
 # Mediloop for PHP
 
-[![tests](https://github.com/zentrix-innovative-labs/mediloop-php/actions/workflows/tests.yml/badge.svg)](https://github.com/zentrix-innovative-labs/mediloop-php/actions/workflows/tests.yml)
-[![Packagist](https://img.shields.io/packagist/v/mediloop/mediloop-php.svg)](https://packagist.org/packages/mediloop/mediloop-php)
-
 A small client for the Mediloop API. No dependencies beyond PHP's own `curl` and `json`.
 
 ## Use a patched PHP
@@ -16,8 +13,6 @@ This library needs PHP 8.3 or later.
 ## Install
 
     composer require mediloop/mediloop-php
-
-Documentation for every endpoint, with real responses, is at https://docs.mediloop.co. Security reports: see SECURITY.md.
 
 Without Composer, copy the `src` folder and `autoload.php` and `require` the autoloader.
 
@@ -67,7 +62,10 @@ It checks the signature in constant time and refuses a delivery older than five 
     $p = Mediloop\Pkce::start();                       // keep $p['verifier'] and $p['state'] in the person's session
     $url = Mediloop\Pkce::authorizeUrl($clientId, $redirectUri, $p['challenge'], $p['state']);
     // ... send the person to $url; on return, check ?state equals $p['state'], then:
-    $tokens = Mediloop\Pkce::exchange($clientId, $redirectUri, $_GET['code'], $p['verifier']);
+    // do the exchange on your server: it sends your client secret
+    $tokens = Mediloop\Pkce::exchange($clientId, $redirectUri, $_GET['code'], $p['verifier'], clientSecret: $clientSecret);
+    // later, before the access token ends:
+    $fresh = Mediloop\Pkce::refresh($clientId, $tokens['refresh_token'], clientSecret: $clientSecret);
 
 ## Tests
 

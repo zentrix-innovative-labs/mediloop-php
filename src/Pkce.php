@@ -35,24 +35,48 @@ final class Pkce
 
     /**
      * Swap the code Mediloop sent back for the person's tokens. Check that the state you got back equals the one you kept.
+     * Do this on your server: it sends your client secret.
      *
      * @return array<string,mixed>
      */
-    public static function exchange(string $clientId, string $redirectUri, string $code, string $verifier, ?Transport $transport = null): array
+    public static function exchange(string $clientId, string $redirectUri, string $code, string $verifier, ?Transport $transport = null, ?string $clientSecret = null): array
     {
-        $transport ??= new CurlTransport();
-        $body = http_build_query([
+        $form = [
             'grant_type' => 'authorization_code',
             'client_id' => $clientId,
             'redirect_uri' => $redirectUri,
             'code' => $code,
             'code_verifier' => $verifier,
-        ]);
+        ];
+        return self::tokenRequest($form, $clientSecret, $transport, 'Mediloop did not accept the sign-in code.');
+    }
+
+    /**
+     * Get a new access token with the refresh token. Do this on your server: it sends your client secret.
+     *
+     * @return array<string,mixed>
+     */
+    public static function refresh(string $clientId, string $refreshToken, ?Transport $transport = null, ?string $clientSecret = null): array
+    {
+        $form = ['grant_type' => 'refresh_token', 'client_id' => $clientId, 'refresh_token' => $refreshToken];
+        return self::tokenRequest($form, $clientSecret, $transport, 'Mediloop did not accept the refresh token. The person may have stopped your app.');
+    }
+
+    /**
+     * @param array<string,string> $form
+     * @return array<string,mixed>
+     */
+    private static function tokenRequest(array $form, ?string $clientSecret, ?Transport $transport, string $failure): array
+    {
+        $transport ??= new CurlTransport();
+        if ($clientSecret !== null && $clientSecret !== '') {
+            $form['client_secret'] = $clientSecret;
+        }
         $response = $transport->send('POST', self::ISSUER . '/protocol/openid-connect/token',
-            ['Content-Type' => 'application/x-www-form-urlencoded', 'Accept' => 'application/json'], $body, 30.0);
+            ['Content-Type' => 'application/x-www-form-urlencoded', 'Accept' => 'application/json'], http_build_query($form), 30.0);
         $data = json_decode($response['body'], true);
         if ($response['status'] !== 200 || !is_array($data) || empty($data['access_token'])) {
-            throw new MediloopException('Mediloop did not accept the sign-in code.');
+            throw new MediloopException($failure);
         }
         return $data;
     }

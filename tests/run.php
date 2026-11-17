@@ -135,5 +135,10 @@ check('the challenge is the SHA-256 of the verifier', $p['challenge'] === rtrim(
 $url = Pkce::authorizeUrl('ext-app', 'https://app.example/cb', $p['challenge'], $p['state']);
 check('the sign-in address names S256 and the state', str_contains($url, 'code_challenge_method=S256') && str_contains($url, 'state=' . $p['state']));
 
+$t = new Fake([['status' => 200, 'body' => json_encode(['access_token' => 'a', 'refresh_token' => 'r'])], ['status' => 200, 'body' => json_encode(['access_token' => 'b'])], ['status' => 400, 'body' => '{}']]);
+$tokens = Pkce::exchange('ext-app', 'https://app.example/cb', 'code1', $p['verifier'], $t, 'secret1');
+check('the code exchange sends the client secret and the verifier', $tokens['access_token'] === 'a' && str_contains($t->calls[0][3], 'client_secret=secret1') && str_contains($t->calls[0][3], 'code_verifier='));
+check('a refresh token gets a new access token', Pkce::refresh('ext-app', 'r', $t, 'secret1')['access_token'] === 'b');
+check('a refused refresh is raised', raises(fn () => Pkce::refresh('ext-app', 'r', $t, 'secret1'), MediloopException::class) !== null);
 echo $failures === 0 ? "\nAll passed.\n" : "\n$failures failed.\n";
 exit($failures === 0 ? 0 : 1);

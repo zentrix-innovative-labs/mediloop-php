@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- Sign in with Mediloop: the code exchange now sends your client secret (an approved app is a confidential client, and
+  Mediloop refuses an exchange without it), and `Pkce::refresh()` gets a new access token from the refresh token.
+
 ## 1.0.0
 
 First release.
