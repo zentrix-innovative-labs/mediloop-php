@@ -1,0 +1,33 @@
+{
+  "name": "mediloop/mediloop-php",
+  "description": "A small PHP client for the Mediloop API: tokens, safe retries, paging, webhook checks and Sign in with Mediloop.",
+  "type": "library",
+  "license": "MIT",
+  "keywords": ["mediloop", "health", "healthcare", "uganda", "api", "sdk", "emr", "webhooks"],
+  "homepage": "https://docs.mediloop.co",
+  "support": {
+    "docs": "https://docs.mediloop.co",
+    "issues": "https://github.com/zentrix-innovative-labs/mediloop-php/issues",
+    "source": "https://github.com/zentrix-innovative-labs/mediloop-php",
+    "security": "https://github.com/zentrix-innovative-labs/mediloop-php/security/policy"
+  },
+  "require": {
+    "php": ">=8.3",
+    "ext-curl": "*",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": { "Mediloop\\": "src/" }
+  },
+  "autoload-dev": {
+    "psr-4": { "Mediloop\\Tests\\": "tests/" }
+  },
+  "scripts": {
+    "test": "php tests/run.php"
+  },
+  "config": {
+    "sort-packages": true,
+    "optimize-autoloader": true
+  },
+  "minimum-stability": "stable"
+}

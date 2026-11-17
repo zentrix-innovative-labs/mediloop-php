@@ -1,0 +1,33 @@
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, json
+          coverage: none
+      - name: Refuse a PHP older than the fixed release
+        run: |
+          php -r '
+          $v = PHP_VERSION;
+          $fixed = ["8.3" => "8.3.36", "8.4" => "8.4.27", "8.5" => "8.5.12"];
+          $branch = PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;
+          if (version_compare($v, $fixed[$branch], "<")) { fwrite(STDERR, "PHP $v is older than $fixed[$branch], which fixes CVE-2026-109618 and CVE-2026-109619\n"); exit(1); }
+          echo "PHP $v\n";'
+      - run: composer validate --strict
+      - run: composer test
