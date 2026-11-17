@@ -67,6 +67,12 @@ It checks the signature in constant time and refuses a delivery older than five 
     // later, before the access token ends:
     $fresh = Mediloop\Pkce::refresh($clientId, $tokens['refresh_token'], clientSecret: $clientSecret);
 
+## Sandbox
+
+To test with made-up data, use a sandbox key (`sk_test_...`) and the sandbox address:
+
+    $mediloop = new Mediloop\Client(apiKey: getenv('MEDILOOP_SANDBOX_KEY'), baseUrl: 'https://sandbox.api.mediloop.co');
+
 ## Tests
 
     php tests/run.php        # no network
